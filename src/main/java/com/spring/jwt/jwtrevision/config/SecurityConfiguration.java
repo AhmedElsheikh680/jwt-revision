@@ -61,14 +61,31 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userRepo))
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
-//                .anyRequest().authenticated()
-                .antMatchers("/api/v1/main").permitAll()
-                .antMatchers("/api/v1/profile").authenticated()
-                .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/management").hasAnyRole("ADMIN", "MANAGER")
-                .antMatchers("api/v1/basic/mybasic").hasAuthority("ACCESS_BASIC1")
-                .antMatchers("/api/v1/basic/allbasic").hasAuthority("ACCESS_BASIC2")
+                .antMatchers("/api/v1/admin").hasRole("ADMIN")
+                .antMatchers("/api/v1/adminormanger").hasAnyRole("ADMIN", "MANAGER")
+                .antMatchers("/api/v1/adminmangeruser").hasAnyRole("ADMIN", "MANAGER", "USER")
                 .anyRequest().authenticated();
+
+
+
+//        http
+//                .csrf().disable()
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userRepo))
+//                .authorizeRequests()
+//                .antMatchers(HttpMethod.POST, "/login").permitAll()
+////                .anyRequest().authenticated()
+//                .antMatchers("/api/v1/main").permitAll()
+//                .antMatchers("/api/v1/profile").authenticated()
+//                .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
+//                .antMatchers("/api/v1/management").hasAnyRole("ADMIN", "MANAGER")
+//                .antMatchers("api/v1/basic/mybasic").hasAuthority("ACCESS_BASIC1")
+//                .antMatchers("/api/v1/basic/allbasic").hasAuthority("ACCESS_BASIC2")
+//                .anyRequest().authenticated();
+
+
 //                .and()
 //                .formLogin()
 //                .loginProcessingUrl("/signin")
