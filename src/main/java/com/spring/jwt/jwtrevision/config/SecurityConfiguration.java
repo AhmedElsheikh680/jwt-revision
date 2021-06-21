@@ -1,12 +1,17 @@
 package com.spring.jwt.jwtrevision.config;
 
+import com.spring.jwt.jwtrevision.jwt.JwtAuthenticationFilter;
+import com.spring.jwt.jwtrevision.jwt.JwtAuthorizationFilter;
+import com.spring.jwt.jwtrevision.repo.UserRepo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -16,9 +21,14 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private UserPricipleDetailsService userPricipleDetailsService;
-    public SecurityConfiguration(UserPricipleDetailsService userPricipleDetailsService){
+    private UserRepo userRepo;
+
+    public SecurityConfiguration(UserPricipleDetailsService userPricipleDetailsService, UserRepo userRepo) {
         this.userPricipleDetailsService = userPricipleDetailsService;
+        this.userRepo = userRepo;
     }
+
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -44,7 +54,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userRepo))
                 .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/login").permitAll()
 //                .anyRequest().authenticated()
                 .antMatchers("/api/v1/main").permitAll()
                 .antMatchers("/api/v1/profile").authenticated()
@@ -52,14 +68,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/management").hasAnyRole("ADMIN", "MANAGER")
                 .antMatchers("api/v1/basic/mybasic").hasAuthority("ACCESS_BASIC1")
                 .antMatchers("/api/v1/basic/allbasic").hasAuthority("ACCESS_BASIC2")
-                .and()
-                .formLogin()
-                .loginProcessingUrl("/signin")
-                .loginPage("/api/v1/login")
-                .usernameParameter("user")
-                .passwordParameter("pass")
-                .and()
-                .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/api/v1/main");
+                .anyRequest().authenticated();
+//                .and()
+//                .formLogin()
+//                .loginProcessingUrl("/signin")
+//                .loginPage("/api/v1/login")
+//                .usernameParameter("user")
+//                .passwordParameter("pass")
+//                .and()
+//                .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/api/v1/main");
 //                .httpBasic();
     }
 
